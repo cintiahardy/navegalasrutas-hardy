@@ -1,60 +1,70 @@
-import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { getProducts, getProductsByCategory } from "../data/mockProducts";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import ProductList from "./ProductList.jsx";
+import { getProducts as getMockProducts, getProductsByCategory as getMockByCategory } from "../data/mockProducts.js";
 
-function ItemListContainer({ greeting, subtitle }) {
-  const [products, setProducts] = useState([]);
+// Import firebase optional
+import { getFirestore, collection, getDocs, query, where } from "firebase/firestore";
+import firebaseApp from "../firebase/config.js";
+
+export default function ItemListContainer() {
   const { categoriaId } = useParams();
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (categoriaId) {
-      getProductsByCategory(categoriaId).then((res) => setProducts(res));
-    } else {
-      getProducts().then((res) => setProducts(res));
+    setLoading(true);
+
+    // Try Firestore first (if configured)
+    try {
+      const db = getFirestore(firebaseApp);
+      const prodCol = collection(db, "products");
+      const q = categoriaId ? query(prodCol, where("categoria", "==", categoriaId)) : prodCol;
+      getDocs(q)
+        .then((snap) => {
+          if (!snap.empty) {
+            const arr = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+            setProducts(arr);
+            setLoading(false);
+          } else {
+            // fallback to mock
+            if (categoriaId) {
+              getMockByCategory(categoriaId).then((res) => { setProducts(res); setLoading(false); });
+            } else {
+              getMockProducts().then((res) => { setProducts(res); setLoading(false); });
+            }
+          }
+        })
+        .catch(() => {
+          // fallback to mock
+          if (categoriaId) {
+            getMockByCategory(categoriaId).then((res) => { setProducts(res); setLoading(false); });
+          } else {
+            getMockProducts().then((res) => { setProducts(res); setLoading(false); });
+          }
+        });
+    } catch (err) {
+      // fallback to mock (if firebase not set)
+      if (categoriaId) {
+        getMockByCategory(categoriaId).then((res) => { setProducts(res); setLoading(false); });
+      } else {
+        getMockProducts().then((res) => { setProducts(res); setLoading(false); });
+      }
     }
   }, [categoriaId]);
 
+  if (loading) return <p className="text-center my-5">Cargando productos...</p>;
+
   return (
-    <section className="container my-5">
-      {/* Encabezado */}
-      <div className="text-center mb-5">
+    <section>
+      <div className="text-center mb-4">
         <h1 className="fw-bold display-4 text-success">MERCADO MODELO</h1>
-        <h2 className="text-secondary">{greeting}</h2>
-        {subtitle && <p className="text-muted">{subtitle}</p>}
+        <p className="text-muted">Lo natural hace bien</p>
       </div>
 
-      {/* Lista de productos */}
-      <div className="row">
-        {products.map((prod) => (
-          <div key={prod.id} className="col-md-3 mb-4">
-            <div className="card h-100 border-0 shadow-lg rounded-4">
-              <img
-                src={prod.imagen}
-                className="card-img-top rounded-top-4"
-                alt={prod.nombre}
-                style={{ height: "200px", objectFit: "cover" }}
-              />
-              <div className="card-body d-flex flex-column justify-content-between text-center">
-                <h5 className="card-title text-success fw-bold">
-                  {prod.nombre}
-                </h5>
-                <p className="card-text fs-5 fw-semibold text-dark">
-                  ${prod.precio}
-                </p>
-                <Link
-                  to={`/detalle/${prod.id}`}
-                  className="btn btn-success fw-bold mt-2"
-                >
-                  Ver detalle
-                </Link>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+      <ProductList products={products} />
     </section>
   );
 }
 
-export default ItemListContainer;
 

@@ -1,47 +1,45 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { getProducts } from "../data/mockProducts";
 import ItemCount from "./ItemCount";
 
-export default function ItemDetail({ producto }) {
-  if (!producto) return null;
+export default function ItemListContainer() {
+  const [productos, setProductos] = useState([]);
+
+  useEffect(() => {
+    getProducts().then((data) => setProductos(data));
+  }, []);
+
+  const handleAdd = (cantidad, nombre) => {
+    if (cantidad > 0) {
+      console.log(`✅ Agregado ${cantidad} x ${nombre} al carrito`);
+    }
+  };
 
   return (
-    <div
-      className="item-detail card"
-      style={{
-        padding: "1.2rem",
-        display: "flex",
-        gap: "1rem",
-        alignItems: "center",
-      }}
-    >
-      <img
-        src={producto.imagen}
-        alt={producto.nombre}
-        style={{
-          width: 220,
-          height: 160,
-          objectFit: "cover",
-          borderRadius: 8,
-        }}
-      />
-
-      <div style={{ flex: 1 }}>
-        <h2 style={{ marginBottom: ".5rem" }}>{producto.nombre}</h2>
-        <p style={{ marginBottom: ".6rem" }}>{producto.descripcion}</p>
-        <p style={{ fontWeight: 700, marginBottom: ".6rem" }}>
-          Precio: ${producto.precio}
-        </p>
-
-        {/* Contador de cantidad */}
-        <ItemCount
-          stock={20}
-          initial={1}
-          onAdd={(cantidad) => {
-            console.log(
-              `Agregar ${cantidad} unidades de ${producto.nombre} al carrito`
-            );
-          }}
-        />
+    <div className="container my-5">
+      <h2 className="text-center mb-4">🛍️ Nuestros Productos</h2>
+      <div className="row">
+        {productos.map((prod) => (
+          <div key={prod.id} className="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
+            <div className="card h-100 shadow-sm d-flex flex-column justify-content-between">
+              <img
+                src={prod.imagen}
+                alt={prod.nombre}
+                className="card-img-top"
+                style={{ height: "180px", objectFit: "cover" }}
+              />
+              <div className="card-body">
+                <h5 className="card-title">{prod.nombre}</h5>
+                <p className="card-text text-muted">{prod.detalle}</p>
+                <p className="card-text fw-bold fs-5">${prod.precio}</p>
+                <ItemCount
+                  stock={20}
+                  onAdd={(cantidad) => handleAdd(cantidad, prod.nombre)}
+                />
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
