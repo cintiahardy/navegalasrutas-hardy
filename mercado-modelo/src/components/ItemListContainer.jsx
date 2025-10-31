@@ -1,70 +1,62 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import ProductList from "./ProductList.jsx";
-import { getProducts as getMockProducts, getProductsByCategory as getMockByCategory } from "../data/mockProducts.js";
+// src/components/ItemListContainer.jsx
+import { useEffect, useState } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../firebase/config";
 
-// Import firebase optional
-import { getFirestore, collection, getDocs, query, where } from "firebase/firestore";
-import firebaseApp from "../firebase/config.js";
-
-export default function ItemListContainer() {
-  const { categoriaId } = useParams();
-  const [products, setProducts] = useState([]);
+const ItemListContainer = () => {
+  const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
-
-    // Try Firestore first (if configured)
-    try {
-      const db = getFirestore(firebaseApp);
-      const prodCol = collection(db, "products");
-      const q = categoriaId ? query(prodCol, where("categoria", "==", categoriaId)) : prodCol;
-      getDocs(q)
-        .then((snap) => {
-          if (!snap.empty) {
-            const arr = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-            setProducts(arr);
-            setLoading(false);
-          } else {
-            // fallback to mock
-            if (categoriaId) {
-              getMockByCategory(categoriaId).then((res) => { setProducts(res); setLoading(false); });
-            } else {
-              getMockProducts().then((res) => { setProducts(res); setLoading(false); });
-            }
-          }
-        })
-        .catch(() => {
-          // fallback to mock
-          if (categoriaId) {
-            getMockByCategory(categoriaId).then((res) => { setProducts(res); setLoading(false); });
-          } else {
-            getMockProducts().then((res) => { setProducts(res); setLoading(false); });
-          }
-        });
-    } catch (err) {
-      // fallback to mock (if firebase not set)
-      if (categoriaId) {
-        getMockByCategory(categoriaId).then((res) => { setProducts(res); setLoading(false); });
-      } else {
-        getMockProducts().then((res) => { setProducts(res); setLoading(false); });
+    const obtenerProductos = async () => {
+      try {
+        const productosRef = collection(db, "productos");
+        const snapshot = await getDocs(productosRef);
+        const productosData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setProductos(productosData);
+      } catch (error) {
+        console.error("Error al cargar productos desde Firebase:", error);
+      } finally {
+        setLoading(false);
       }
-    }
-  }, [categoriaId]);
+    };
 
-  if (loading) return <p className="text-center my-5">Cargando productos...</p>;
+    obtenerProductos();
+  }, []);
+
+  if (loading) {
+    return <h3 className="text-center mt-5">Cargando productos...</h3>;
+  }
 
   return (
-    <section>
-      <div className="text-center mb-4">
-        <h1 className="fw-bold display-4 text-success">MERCADO MODELO</h1>
-        <p className="text-muted">Lo natural hace bien</p>
+    <div className="container mt-4">
+      <h2 className="text-center mb-4">Nuestros Productos</h2>
+      <div className="row">
+        {productos.map((producto) => (
+          <div key={producto.id} className="col-md-4 mb-4">
+            <div className="card shadow-sm">
+              <img
+                src={producto.imagen}
+                className="card-img-top"
+                alt={producto.nombre}
+                style={{ height: "250px", objectFit: "cover" }}
+              />
+              <div className="card-body text-center">
+                <h5 className="card-title">{producto.nombre}</h5>
+                <p className="card-text text-muted">{producto.detalle}</p>
+                <p className="fw-bold">${producto.precio}</p>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
-
-      <ProductList products={products} />
-    </section>
+    </div>
   );
-}
+};
+
+export default ItemListContainer;
 
 

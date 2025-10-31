@@ -1,21 +1,21 @@
-// src/firebaseConfig.js
+// src/firebase/config.js
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore"; // usamos Firestore
-import { getDatabase } from "firebase/database"; // opcional si querés Realtime DB también
+import { getFirestore } from "firebase/firestore";
+
+// src/firebase/config.js
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "TU_API_KEY",
+  apiKey: "AIzaSyAo_LgDOAt2psbHniYlccT21ZWyM_cY07Q",
   authDomain: "mercado-modelo-cintia.firebaseapp.com",
-  databaseURL: "https://mercado-modelo-cintia-default-rtdb.firebaseio.com",
   projectId: "mercado-modelo-cintia",
-  storageBucket: "mercado-modelo-cintia.appspot.com",
-  messagingSenderId: "TU_SENDER_ID",
-  appId: "TU_APP_ID",
+  storageBucket: "mercado-modelo-cintia.firebasestorage.app",
+  messagingSenderId: "285865652649",
+  appId: "1:285865652649:web:7b18a37101b1f1c8a054b8",
+  measurementId: "G-3D54XNZZ86"
 };
 
-// Inicializamos Firebase
+// Inicializa Firebase
 const app = initializeApp(firebaseConfig);
-
-// Exportamos las instancias
 export const db = getFirestore(app);
-export const realtimeDB = getDatabase(app);

@@ -1,16 +1,21 @@
 // src/data/subirProductos.js
 import { collection, addDoc } from "firebase/firestore";
-import { db } from "../firebaseConfig.js";
-import productos from "./productos";
+import { db } from "../firebaseConfig.js"; // 👈 incluye el .js
+import productos from "./productos.js"; // 👈 incluye el .js
 
-export async function subirProductos() {
+const subirProductos = async () => {
   try {
-    const productosRef = collection(db, "productos");
-    for (const prod of productos) {
-      await addDoc(productosRef, prod);
+    const productosCollection = collection(db, "productos");
+
+    for (const producto of productos) {
+      await addDoc(productosCollection, producto);
+      console.log(`✅ Producto agregado: ${producto.nombre}`);
     }
-    console.log("✅ Productos subidos correctamente a Firebase");
+
+    console.log("🎉 Todos los productos fueron cargados correctamente.");
   } catch (error) {
-    console.error("❌ Error al subir productos:", error);
+    console.error("❌ Error al subir los productos:", error);
   }
-}
+};
+
+subirProductos();
