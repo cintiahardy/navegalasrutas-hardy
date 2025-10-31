@@ -1,6 +1,6 @@
 // src/data/subirProductos.js
 import { collection, addDoc } from "firebase/firestore";
-import { db } from "../firebaseConfig";
+import { db } from "../firebaseConfig.js";
 import productos from "./productos";
 
 export async function subirProductos() {

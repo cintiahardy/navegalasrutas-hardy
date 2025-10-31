@@ -1,22 +1,18 @@
-// src/firebase/config.js
+// src/firebaseConfig.js
 import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
 
+// Configuración de tu app Firebase
 const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_AUTH_DOMAIN",
-  projectId: "TU_PROJECT_ID",
-  storageBucket: "TU_STORAGE_BUCKET",
-  messagingSenderId: "TU_MESSAGING_SENDER_ID",
-  appId: "TU_APP_ID"
+  apiKey: "AIzaSyAo_LgDOAt2psbHniYlccT21ZWyM_cY07Q",
+  authDomain: "mercado-modelo-cintia.firebaseapp.com",
+  projectId: "mercado-modelo-cintia",
+  storageBucket: "mercado-modelo-cintia.firebasestorage.app",
+  messagingSenderId: "285865652649",
+  appId: "1:285865652649:web:7b18a37101b1f1c8a054b8",
+  measurementId: "G-3D54XNZZ86"
 };
 
-// Si no querés usar Firebase ahora, devolvemos un objeto mínimo para no romper imports
-let app;
-try {
-  app = initializeApp(firebaseConfig);
-} catch (err) {
-  // ignore if already initialized or config missing
-  app = {};
-}
-
-export default app;
+// Inicializamos Firebase y Firestore
+const app = initializeApp(firebaseConfig);
+export const db = getFirestore(app);
